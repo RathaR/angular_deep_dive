@@ -209,13 +209,13 @@ describe('Scope', function () {
                     return scope.number;
                 },
                 function(newValue, oldValue, scope) {
-                    scope.counter ++;
+                    scope.counter++;
                 }
             );
             scope.$digest();
             expect(scope.counter).toBe(1);
             scope.$digest();
-            expect(Scope.counter).toBe(1);
+            expect(scope.counter).toBe(1);
         })
     });
 });

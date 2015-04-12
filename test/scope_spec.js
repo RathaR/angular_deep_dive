@@ -190,7 +190,7 @@ describe('Scope', function () {
                     return scope.aValue;
                 },
                 function (newValue, oldValue, scope) {
-                    scope.counter ++;
+                    scope.counter++;
                 },
                 true
             );
@@ -201,14 +201,14 @@ describe('Scope', function () {
             expect(scope.counter).toBe(2);
         });
 
-        it('correctly handles NaNs', function() {
-            scope.number = 0/0;
+        it('correctly handles NaNs', function () {
+            scope.number = 0 / 0;
             scope.counter = 0;
             scope.$watch(
-                function(scope) {
+                function (scope) {
                     return scope.number;
                 },
-                function(newValue, oldValue, scope) {
+                function (newValue, oldValue, scope) {
                     scope.counter++;
                 }
             );
@@ -216,6 +216,38 @@ describe('Scope', function () {
             expect(scope.counter).toBe(1);
             scope.$digest();
             expect(scope.counter).toBe(1);
-        })
+        });
+
+        it('executes $eval\'ed function and returns result', function () {
+            scope.aValue = 42;
+            var result = scope.$eval(function (scope) {
+                return scope.aValue;
+            });
+            expect(result).toBe(42);
+        });
+
+        it('passed the second $eval argument straight through', function () {
+            scope.aValue = 42;
+            var result = scope.$eval(function (scope, arg) {
+                return scope.aValue + arg;
+            }, 2);
+            expect(result).toBe(44);
+        });
+
+        it('executes $apply\'ed function and starts the digest', function () {
+            scope.aValue = 'someValue';
+            scope.counter = 0;
+            scope.$watch(function (scope) {
+                return scope.aValue;
+            }, function (newValue, oldValue, scope) {
+                scope.counter++;
+            });
+            scope.$digest();
+            expect(scope.counter).toBe(1);
+            scope.$apply(function (scope) {
+                scope.aValue = 'someOtherValue';
+            });
+        });
     });
+
 });

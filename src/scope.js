@@ -10,6 +10,7 @@ function Scope() {
     this.$$applyAsyncQueue = [];
     this.$$phase = null;
     this.$$applyAsyncId = null;
+    this.$$postDigestQueue = [];
 }
 
 Scope.prototype.$watch = function (watchFn, listenerFn, valueEq) {
@@ -63,6 +64,10 @@ Scope.prototype.$digest = function () {
         }
     } while (dirty || this.$$asyncQueue.length);
     this.$cleanPhase();
+
+    while(this.$$postDigestQueue.length) {
+        this.$$postDigestQueue.shift()();
+    }
 };
 
 Scope.prototype.$$areEqual = function (newValue, oldValue, valueEq) {
@@ -119,6 +124,10 @@ Scope.prototype.$$flushApplyAsync = function() {
     this.$$applyAsyncId = null;
 };
 
+Scope.prototype.$$postDigest = function(fn) {
+  this.$$postDigestQueue.push(fn);
+};
+
 Scope.prototype.$$beginPhase = function (phase) {
     if (this.$$phase) {
         throw this.$phase + 'already in progress';
@@ -127,4 +136,4 @@ Scope.prototype.$$beginPhase = function (phase) {
 };
 Scope.prototype.$cleanPhase = function () {
     this.$$phase = null;
-}
+};

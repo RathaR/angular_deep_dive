@@ -160,6 +160,31 @@ Scope.prototype.$$beginPhase = function (phase) {
     }
     this.$$phase = phase;
 };
+
 Scope.prototype.$cleanPhase = function () {
     this.$$phase = null;
+};
+
+Scope.prototype.$watchGroup = function (watchFns, listenerFn) {
+    var self = this;
+    var newValues = new Array(watchFns.length);
+    var oldValues = new Array(watchFns.length);
+
+    var changeReactionsScheduled = false;
+
+    function watchGroupListener() {
+        listenerFn(newValues, oldValues, self);
+        changeReactionsScheduled = false;
+    }
+
+    _.forEach(watchFns, function (watchFn, i) {
+        self.$watch(watchFn, function (newValue, oldValue) {
+            newValues[i] = newValue;
+            oldValues[i] = oldValue;
+            if (!changeReactionsScheduled) {
+                changeReactionsScheduled = true;
+                self.$evalAsync(watchGroupListener);
+            }
+        });
+    });
 };

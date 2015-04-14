@@ -614,22 +614,68 @@ describe('Scope', function () {
             var watchCalls = [];
 
             scope.$watch(function (scope) {
-                watchCalls.push('first');
+                watchCalls.push('1');
                 return scope.aValue;
             });
             var destroyWatch = scope.$watch(
-                function(scope) {
-                    watchCalls.push('second');
+                function (scope) {
+                    watchCalls.push('2');
                     destroyWatch();
                 });
 
-            scope.$watch(function(scope) {
-                watchCalls.push('third');
+            scope.$watch(function (scope) {
+                watchCalls.push('3');
                 return scope.aValue;
             });
             scope.$digest();
-            expect(watchCalls).toEqual(['first', 'second', 'third', 'first', 'third']);
+            expect(watchCalls).toEqual(['1', '2', '3', '1', '3']);
         });
 
+        it('allows a $watch to destroy another during $digest', function () {
+            scope.aValue = 'abc';
+            scope.counter = 0;
+            scope.$watch(
+                function (scope) {
+                    return scope.aValue;
+                },
+                function (newValue, oldValue, scope) {
+                    destroyWatch();
+                });
+            var destroyWatch = scope.$watch(
+                function (scope) {
+
+                },
+                function (newValue, oldValue, scope) {
+
+                });
+            scope.$watch(function (scope) {
+                    return scope.aValue;
+                },
+                function (newValue, oldValue, scope) {
+                    scope.counter++;
+                });
+            scope.$digest();
+            expect(scope.counter).toBe(1);
+
+        });
+
+        it('allow destroying several watchers during digest', function() {
+           scope.aValue = 'abc';
+            scope.counter = 0;
+            var destroyWatch1 = scope.$watch(function(scope) {
+                destroyWatch1();
+                destroyWatch2();
+            });
+            var destroyWatch2 = scope.$watch(
+                function(scope) {
+                    return scope.aValue;
+                },
+                function(newValue, oldValue, scope) {
+                    scope.counter++;
+                }
+            );
+            scope.$digest();
+            expect(scope.counter).toBe(0);
+        });
     });
 });

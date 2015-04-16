@@ -216,5 +216,6 @@ Scope.prototype.$watchGroup = function (watchFns, listenerFn) {
 
 Scope.prototype.$new = function () {
     var child = Object.create(this);
+    child.$$watchers = [];
     return child;
 };

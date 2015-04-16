@@ -830,7 +830,7 @@ describe('Scope', function () {
 
     describe('inheritance', function () {
         it('inherits the parents properties', function () {
-            var paren = new Scope();
+            var parent = new Scope();
             parent.aValue = [1, 2, 3];
             var child = parent.$new();
             expect(child.aValue).toEqual([1, 2, 3]);
@@ -867,14 +867,14 @@ describe('Scope', function () {
             var parent = new Scope();
             var child = parent.$new();
             parent.aValue = [1, 2, 3];
-            parent.counter = 0;
+            child.counter = 0;
 
             child.$watch(
                 function(scope) {
                     return scope.aValue;
                 },
                 function(newValue, oldValue, scope) {
-                    counter++;
+                    scope.counter++;
                 },
                 true
             );
@@ -882,6 +882,7 @@ describe('Scope', function () {
             expect(child.counter).toBe(1);
 
             parent.aValue.push(4);
+            child.$digest();
             expect(child.counter).toBe(2);
         });
 
@@ -900,7 +901,7 @@ describe('Scope', function () {
             expect(aab.value).toBe(1);
             expect(ab.value).toBe(1);
             expect(abb.value).toBe(1);
-            
+
             ab.anotherValue = 2;
 
             expect(abb.anotherValue).toBe(2);

@@ -938,10 +938,10 @@ describe('Scope', function () {
             parent.aValue = 'abc';
 
             parent.$watch(
-                function(scope) {
+                function (scope) {
                     return scope.aValue;
                 },
-                function(newValue, oldValue, scope) {
+                function (newValue, oldValue, scope) {
                     scope.aValueWas = newValue;
                 }
             );
@@ -949,8 +949,8 @@ describe('Scope', function () {
             expect(child.aValueWas).toBeUndefined();
         });
 
-        it('keeps a record of its children', function() {
-           var parent = new Scope();
+        it('keeps a record of its children', function () {
+            var parent = new Scope();
             var child1 = parent.$new();
             var child2 = parent.$new();
             var child2_1 = child2.$new();
@@ -961,6 +961,23 @@ describe('Scope', function () {
             expect(child1.$$children.length).toBe(0);
             expect(child2.$$children.length).toBe(1);
             expect(child2.$$children[0]).toBe(child2_1);
+        });
+
+        it('digest its children', function () {
+            var parent = new Scope();
+            var child = parent.$new();
+
+            parent.aValue = 'abc';
+            child.$watch(
+                function (scope) {
+                    return scope.aValue;
+                },
+                function (newValue, oldValue, scope) {
+                    scope.aValueWas = newValue;
+                }
+            );
+            parent.$digest();
+            expect(child.aValueWas).toBe('abc');
         });
     });
 });

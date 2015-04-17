@@ -11,6 +11,7 @@ function Scope() {
     this.$$phase = null;
     this.$$applyAsyncId = null;
     this.$$postDigestQueue = [];
+    this.$$children = [];
 }
 
 Scope.prototype.$watch = function (watchFn, listenerFn, valueEq) {
@@ -217,5 +218,8 @@ Scope.prototype.$watchGroup = function (watchFns, listenerFn) {
 Scope.prototype.$new = function () {
     var child = Object.create(this);
     child.$$watchers = [];
+    child.$$children = [];
+    this.$$children.push(child);
+
     return child;
 };

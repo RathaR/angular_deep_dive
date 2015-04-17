@@ -12,6 +12,7 @@ function Scope() {
     this.$$applyAsyncId = null;
     this.$$postDigestQueue = [];
     this.$$children = [];
+    this.$root = this;
 }
 
 Scope.prototype.$watch = function (watchFn, listenerFn, valueEq) {
@@ -118,7 +119,7 @@ Scope.prototype.$apply = function (expr) {
     }
     finally {
         this.$cleanPhase();
-        this.$digest();
+        this.$root.$digest();
     }
 };
 

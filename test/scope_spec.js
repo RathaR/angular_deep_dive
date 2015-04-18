@@ -1136,5 +1136,26 @@ describe('Scope', function () {
             expect(child.didPostDigest).toBe(true);
         });
 
+        it('can take some other scope as the parent', function() {
+           var prototypeParent = new Scope();
+            var hirerarchyParent = new Scope();
+            var child = prototypeParent.$new(false, hirerarchyParent);
+            prototypeParent.a = 42;
+            expect(child.a).toBe(42);
+
+            child.counter =0;
+            child.$watch(function(scope) {
+               scope.counter++;
+            });
+
+            prototypeParent.$digest();
+            expect(child.counter).toBe(0);
+
+            hirerarchyParent.$digest();
+            expect(child.counter).toBe(2);
+        });
+
+
+
     });
 });

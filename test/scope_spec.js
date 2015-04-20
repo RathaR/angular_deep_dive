@@ -1259,5 +1259,51 @@ describe('Scope', function () {
             scope.$digest();
             expect(scope.counter).toBe(2);
         });
+
+        it('notices when item added to an array', function () {
+            scope.counter = 0;
+            scope.arr = [1, 2, 3];
+
+            scope.$watchCollection(
+                function (scope) {
+                    return scope.arr;
+                },
+                function (newValue, oldValue, scope) {
+                    scope.counter++;
+                }
+            );
+            scope.$digest();
+            expect(scope.counter).toBe(1);
+
+            scope.arr.push(4);
+            scope.$digest();
+            expect(scope.counter).toBe(2);
+
+            scope.$digest();
+            expect(scope.counter).toBe(2);
+        });
+
+        it('notices when item removed from an array', function () {
+            scope.counter = 0;
+            scope.arr = [1, 2, 3];
+
+            scope.$watchCollection(
+                function (scope) {
+                    return scope.arr;
+                },
+                function (newValue, oldValue, scope) {
+                    scope.counter++;
+                }
+            );
+            scope.$digest();
+            expect(scope.counter).toBe(1);
+
+            scope.arr.shift();
+            scope.$digest();
+            expect(scope.counter).toBe(2);
+
+            scope.$digest();
+            expect(scope.counter).toBe(2);
+        });
     });
 });

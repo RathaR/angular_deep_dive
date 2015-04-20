@@ -1305,5 +1305,70 @@ describe('Scope', function () {
             scope.$digest();
             expect(scope.counter).toBe(2);
         });
+
+        it('noticed an item replaced in array', function () {
+            scope.arr = [1, 2, 3];
+            scope.counter = 0;
+
+            scope.$watchCollection(
+                function (scope) {
+                    return scope.arr;
+                },
+                function (newValue, oldValue, scope) {
+                    scope.counter++;
+                }
+            );
+
+            scope.$digest();
+            expect(scope.counter).toBe(1);
+
+            scope.arr[1] = 42;
+            scope.$digest();
+
+            expect(scope.counter).toBe(2);
+            scope.$digest();
+            expect(scope.counter).toBe(2);
+        });
+
+        it('noticed items reordered in an array', function () {
+            scope.arr = [2, 1, 3];
+            scope.counter = 0;
+
+            scope.$watchCollection(
+                function (scope) {
+                    return scope.arr;
+                },
+                function (newValue, oldValue, scope) {
+                    scope.counter++;
+                }
+            );
+
+            scope.$digest();
+            expect(scope.counter).toBe(1);
+
+            scope.arr.sort();
+            scope.$digest();
+            expect(scope.counter).toBe(2);
+
+            scope.$digest();
+            expect(scope.counter).toBe(2);
+        });
+
+        it('does not fail on Nans in arrays', function () {
+            scope.arr = [2, NaN, 3];
+            scope.counter = 0;
+
+            scope.$watchCollection(
+                function (scope) {
+                    return scope.arr;
+                },
+                function (newValue, oldValue, scope) {
+                    scope.counter++;
+                }
+            );
+            scope.$digest();
+            expect(scope.counter).toBe(1);
+        });
+
     });
 });

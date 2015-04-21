@@ -1721,7 +1721,7 @@ describe('Scope', function () {
                 expect(event1).toBe(event2);
             });
 
-            it('passes additional arguments to listeners on ' + method, function() {
+            it('passes additional arguments to listeners on ' + method, function () {
                 var listener = jasmine.createSpy();
                 scope.$on('someEvent', listener);
 
@@ -1730,6 +1730,13 @@ describe('Scope', function () {
                 expect(listener.calls.mostRecent().args[1]).toEqual('and');
                 expect(listener.calls.mostRecent().args[2]).toEqual(['additional', 'arguments']);
                 expect(listener.calls.mostRecent().args[3]).toEqual('...');
+            });
+
+            it('returns the event object on ' + method, function () {
+                var returnedEvent = scope[method]('someEvent');
+
+                expect(returnedEvent).toBeDefined();
+                expect(returnedEvent.name).toEqual('someEvent');
             });
         });
 

@@ -1494,20 +1494,45 @@ describe('Scope', function () {
 
         });
 
-        it('does not fail on NaN attributes in object', function() {
-           scope.counter = 0;
+        it('does not fail on NaN attributes in object', function () {
+            scope.counter = 0;
             scope.obj = {a: NaN};
 
             scope.$watchCollection(
-                function(scope) {
+                function (scope) {
                     return scope.obj;
                 },
-                function(newValue, oldValue, scope) {
+                function (newValue, oldValue, scope) {
                     scope.counter++;
                 }
             );
             scope.$digest();
             expect(scope.counter).toBe(1);
         });
+
+        it('noticed when an attribute is removed from an object', function () {
+            scope.counter = 0;
+            scope.obj = {a: 1};
+
+            scope.$watchCollection(
+                function (scope) {
+                    return scope.obj;
+                },
+                function (newValue, oldValue, scope) {
+                    scope.counter++;
+                }
+            );
+
+            scope.$digest();
+            expect(scope.counter).toBe(1);
+            delete scope.obj.a;
+
+            scope.$digest();
+            expect(scope.counter).toBe(2);
+
+            scope.$digest();
+            expect(scope.counter).toBe(2);
+        });
+
     });
 });

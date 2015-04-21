@@ -294,12 +294,19 @@ Scope.prototype.$watchCollection = function (watchFn, listenerFn) {
                     changeCount++;
                     oldValue = {};
                 }
-                _.forOwn(newValue, function(newVal, key) {
+                _.forOwn(newValue, function (newVal, key) {
                     var bothNaN = _.isNaN(newVal) && _.isNaN(oldValue[key]);
 
-                    if(!bothNaN && oldValue[key] !== newVal) {
+                    if (!bothNaN && oldValue[key] !== newVal) {
                         changeCount++;
                         oldValue[key] = newVal;
+                    }
+                });
+
+                _.forOwn(oldValue, function (oldVal, key) {
+                    if (!newValue.hasOwnProperty(key)) {
+                        changeCount++;
+                        delete oldValue[key];
                     }
                 });
             }

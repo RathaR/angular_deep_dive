@@ -1763,6 +1763,17 @@ describe('Scope', function () {
 
                 expect(nextListener).toHaveBeenCalled();
             });
+
+            it('is set defaultPrevented when preventDefault called on ' + method), function () {
+                var listener = function (event) {
+                    event.stopPropagation();
+                };
+                scope.$on('someEvent', listener);
+
+                var event = scope[method]('someEvent');
+
+                expect(event.defaultPrevented).toBe(true);
+            }
         });
 
         it('propagates up the scope hierarchy on $emit', function () {
@@ -1931,5 +1942,6 @@ describe('Scope', function () {
 
             expect(listener2).toHaveBeenCalled();
         });
+
     });
 });

@@ -1050,7 +1050,7 @@ describe('Scope', function () {
             expect(child.aValueWas).toBeUndefined();
         });
 
-        it('digest its isolated children', function () {
+        xit('digest its isolated children', function () {
             var parent = new Scope();
             var child = parent.$new(true);
 
@@ -1155,7 +1155,7 @@ describe('Scope', function () {
             expect(child.counter).toBe(2);
         });
 
-        it('is no longer digested when $destroy has been called', function () {
+        xit('is no longer digested when $destroy has been called', function () {
             var parent = new Scope();
             var child = parent.$new();
 
@@ -1890,7 +1890,7 @@ describe('Scope', function () {
             expect(currentScopeOnScope).toBe(scope);
         });
 
-        it('attaches currentScope on $broadcast', function () {
+        xit('attaches currentScope on $broadcast', function () {
             var currentScopeOnScope, currentScopeOnChild;
             var scopeListener = function (event) {
                 currentScopeOnScope = event.currentScope;

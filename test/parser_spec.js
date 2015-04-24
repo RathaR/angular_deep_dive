@@ -95,7 +95,7 @@ describe('parse', function () {
         expect(function () {
             parse('"\\u00T0"');
         }).toThrow();
-    })
+    });
 
     it('will parse null', function () {
         var fn = parse('null');
@@ -110,5 +110,17 @@ describe('parse', function () {
     it('will parse false', function () {
         var fn = parse('false');
         expect(fn()).toEqual(false);
+    });
+
+    it('marks booleans as literal and constant', function() {
+       var fn = parse('true');
+        expect(fn.literal).toBe(true);
+        expect(fn.constant).toBe(true);
+    });
+
+    it('marks null as literal and constant', function() {
+        var fn = parse('null');
+        expect(fn.literal).toBe(true);
+        expect(fn.constant).toBe(true);
     });
 });

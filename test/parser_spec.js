@@ -112,15 +112,20 @@ describe('parse', function () {
         expect(fn()).toEqual(false);
     });
 
-    it('marks booleans as literal and constant', function() {
-       var fn = parse('true');
+    it('marks booleans as literal and constant', function () {
+        var fn = parse('true');
         expect(fn.literal).toBe(true);
         expect(fn.constant).toBe(true);
     });
 
-    it('marks null as literal and constant', function() {
+    it('marks null as literal and constant', function () {
         var fn = parse('null');
         expect(fn.literal).toBe(true);
         expect(fn.constant).toBe(true);
+    });
+
+    it('ignores whitespace', function () {
+        var fn = parse(' \n42');
+        expect(fn()).toEqual(42);
     });
 });

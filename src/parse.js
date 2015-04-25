@@ -84,8 +84,20 @@ Parser.prototype.primary = function () {
             primary.literal = true;
         }
     }
-
+    while(this.expect('[')) {
+        primary = this.objectIndex(primary);
+    }
     return primary;
+};
+
+Parser.prototype.objectIndex = function (objFn) {
+    var indexFn = this.primary();
+    this.consume(']');
+    return function (scope, locals) {
+        var obj = objFn(scope, locals);
+        var index = indexFn(scope, locals);
+        return obj[index];
+    };
 };
 
 Parser.prototype.expect = function (e) {

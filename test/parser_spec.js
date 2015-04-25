@@ -219,15 +219,15 @@ describe('parse', function () {
         expect(fn({aKey: {anotherKey: 42}}, {aKey: {}})).toBeUndefined();
     });
 
-    it('uses locals when there is a matching local 4-part key', function() {
-       var fn = parse('aKey.key2.key3.key4');
+    it('uses locals when there is a matching local 4-part key', function () {
+        var fn = parse('aKey.key2.key3.key4');
         expect(fn(
             {aKey: {key2: {key3: {key4: 42}}}},
             {aKey: {key2: {key3: {key4: 43}}}}
         )).toBe(43);
     });
 
-    it('uses locals when there is the first part in the local key', function() {
+    it('uses locals when there is the first part in the local key', function () {
         var fn = parse('aKey.key2.key3.key4');
         expect(fn(
             {aKey: {key2: {key3: {key4: 42}}}},
@@ -235,11 +235,36 @@ describe('parse', function () {
         )).toBeUndefined();
     });
 
-    it('it does not use locals when there is no mathicng 4-part key', function() {
+    it('it does not use locals when there is no mathicng 4-part key', function () {
         var fn = parse('aKey.key2.key3.key4');
         expect(fn(
             {aKey: {key2: {key3: {key4: 42}}}},
             {otherKey: {anotherKey: 43}}
         )).toBe(42);
+    });
+
+    it('parses a simple string property access', function () {
+        var fn = parse('aKey["anotherKey"]');
+        expect(fn({aKey: {anotherKey: 42}})).toBe(42);
+    });
+
+    it('parses a numeric array access', function () {
+        var fn = parse('anArray[1]');
+        expect(fn({anArray: [1, 2, 3]})).toBe(2);
+    });
+
+    it('parses a property access with another key as property', function () {
+        var fn = parse('lock[key]');
+        expect(fn({key: 'theKey', lock: {theKey: 42}})).toBe(42);
+    });
+
+    it('parse property access with another access as property', function () {
+        var fn = parse('lock[keys["aKey"]]');
+        expect(fn({keys: {aKey: 'theKey'}, lock: {theKey: 42}})).toBe(42);
+    });
+
+    it('parses several field accesses back to back', function () {
+        var fn = parse('aKey["anotherKey"]["aThirdKey"]');
+        expect(fn({aKey: {anotherKey: {aThirdKey: 42}}})).toBe(42);
     });
 });

@@ -12,6 +12,12 @@ _.forEach(CONSTANTS, function (fn, constantName) {
     fn.constant = fn.literal = true;
 });
 
+var getterFn = function (ident) {
+    return function (scope) {
+        return scope ? scope[ident] : undefined;
+    };
+};
+
 function Parser(lexer) {
     this.lexer = lexer;
 }
@@ -27,7 +33,7 @@ Parser.prototype.primary = function () {
         primary = this.arrayDeclaration();
     } else if (this.expect('{')) {
         primary = this.object();
-    }  else {
+    } else {
         var token = this.expect();
         primary = token.fn;
         if (token.constant) {
@@ -262,7 +268,7 @@ Lexer.prototype.readIdent = function () {
     }
     var token = {
         text: text,
-        fn: CONSTANTS[text]
+        fn: CONSTANTS[text] || getterFn(text)
     };
     this.tokens.push(token);
 };

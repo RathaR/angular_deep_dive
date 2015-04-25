@@ -85,14 +85,34 @@ Parser.prototype.primary = function () {
         }
     }
     var next;
-    while (next = this.expect('[', '.')) {
+    while (next = this.expect('[', '.', '(')) {
         if (next.text === '[') {
             primary = this.objectIndex(primary);
         } else if (next.text === '.') {
             primary = this.fieldAccess(primary);
+        } else if (next.text === '(') {
+            primary = this.functionCall(primary);
         }
     }
     return primary;
+};
+
+Parser.prototype.functionCall = function (fnFn) {
+    var argsFn = [];
+    if (!this.peek(')')) {
+        do {
+            argsFn.push(this.primary())
+        } while (this.expect(','))
+    }
+    this.consume(')');
+
+    return function (scope, locals) {
+        var fn = fnFn(scope, locals);
+        var args = _.map(argsFn, function (argFn) {
+            return argFn(scope, locals);
+        });
+        return fn.apply(null, args);
+    };
 };
 
 Parser.prototype.objectIndex = function (objFn) {
@@ -206,7 +226,7 @@ Lexer.prototype.lex = function (text) {
             this.readNumber();
         } else if (this.is('\'"')) {
             this.readString(this.ch);
-        } else if (this.is('[],{}:.')) {
+        } else if (this.is('[],{}:.()')) {
             this.tokens.push({
                 text: this.ch
             });

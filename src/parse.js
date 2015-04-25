@@ -16,9 +16,23 @@ var getterFn = function (ident) {
     var pathKeys = ident.split('.');
     if (pathKeys.length === 1) {
         return simpleGetterFn1(pathKeys[0]);
-    } else {
+    } else if (pathKeys.length === 2) {
         return simpleGetterFn2(pathKeys[0], pathKeys[1]);
+    } else {
+        return generatedGetterFn(pathKeys);
     }
+};
+
+var generatedGetterFn = function (keys) {
+    var code = '';
+    _.forEach(keys, function (key) {
+        code += 'if(!scope) { return undefined; }\n';
+        code += 'scope = scope["' + key + '"];\n';
+    });
+    code += 'return scope;\n';
+    /* jshint -W054 */
+    return new Function('scope', code);
+    /* jshint +W054 */
 };
 
 var simpleGetterFn1 = function (key) {

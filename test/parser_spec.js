@@ -178,4 +178,13 @@ describe('parse', function () {
         expect(fn({aKey: {}})).toBeUndefined();
         expect(fn({})).toBeUndefined();
     });
+
+    it('looks up a 4-part identifier path from the scope', function () {
+        var fn = parse('aKey.secondKey.thirdKey.fourthKey');
+        expect(fn({aKey: {secondKey: {thirdKey: {fourthKey: 42}}}}));
+        expect(fn({aKey: {secondKey: {thirdKey: {}}}})).toBeUndefined();
+        expect(fn({aKey: {secondKey: {}}})).toBeUndefined();
+        expect(fn({aKey: {}})).toBeUndefined();
+        expect(fn()).toBeUndefined();
+    });
 });

@@ -12,7 +12,7 @@ _.forEach(CONSTANTS, function (fn, constantName) {
     fn.constant = fn.literal = true;
 });
 
-var getterFn = function (ident) {
+var getterFn = _.memoize(function (ident) {
     var pathKeys = ident.split('.');
     if (pathKeys.length === 1) {
         return simpleGetterFn1(pathKeys[0]);
@@ -21,7 +21,7 @@ var getterFn = function (ident) {
     } else {
         return generatedGetterFn(pathKeys);
     }
-};
+});
 
 var generatedGetterFn = function (keys) {
     var code = '';

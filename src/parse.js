@@ -22,14 +22,42 @@ Parser.prototype.parse = function (text) {
 };
 
 Parser.prototype.primary = function () {
-    var token = this.tokens[0];
-    var primary = token.fn;
-    if (token.constant) {
-        primary.constant = true;
-        primary.literal = true;
+    var primary;
+    if (this.expect('[')) {
+        primary = this.arrayDeclaration;
+    } else {
+        var token = this.expect();
+        primary = token.fn;
+        if (token.constant) {
+            primary.constant = true;
+            primary.literal = true;
+        }
     }
+
     return primary;
 };
+
+Parser.prototype.expect = function (e) {
+    if (this.tokens.length > 0) {
+        if (this.tokens[0].text === e || !e) {
+            return this.tokens.shift();
+        }
+    }
+};
+
+Parser.prototype.arrayDeclaration = function () {
+    this.consume(']');
+    return function() {
+        return [];
+    }
+};
+
+Parser.prototype.consume = function(e) {
+  if(!this.expect(e)) {
+      throw 'Unexpected. Expecting ' + e;
+  }
+};
+
 
 function Lexer() {
 
@@ -48,6 +76,11 @@ Lexer.prototype.lex = function (text) {
             this.readNumber();
         } else if (this.ch === '\'' || this.ch === '"') {
             this.readString(this.ch);
+        } else if (this.ch === '[' || this.ch === ']') {
+            this.tokens.push({
+                text: this.ch
+            });
+            this.index++;
         } else if (this.isIdent(this.ch)) {
             this.readIdent();
         } else if (this.isWhitespace(this.ch)) {

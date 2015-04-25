@@ -25,7 +25,9 @@ Parser.prototype.primary = function () {
     var primary;
     if (this.expect('[')) {
         primary = this.arrayDeclaration();
-    } else {
+    } else if (this.expect('{')) {
+        primary = this.object();
+    }  else {
         var token = this.expect();
         primary = token.fn;
         if (token.constant) {
@@ -65,6 +67,32 @@ Parser.prototype.arrayDeclaration = function () {
     return arrayFn;
 };
 
+Parser.prototype.object = function () {
+    var keyValues = [];
+    if (!this.peek('}')) {
+        do {
+            var keyToken = this.expect();
+            this.consume(':');
+            var valueExpression = this.primary();
+            keyValues.push({
+                key: keyToken.string || keyToken.text,
+                value: valueExpression
+            });
+        } while (this.expect(','));
+    }
+    this.consume('}');
+    var objectFn = function () {
+        var object = {};
+        _.forEach(keyValues, function (kv) {
+            object[kv.key] = kv.value();
+        });
+        return object;
+    };
+    objectFn.literal = true;
+    objectFn.constant = true;
+    return objectFn;
+};
+
 Parser.prototype.peek = function (e) {
     if (this.tokens.length > 0) {
         var text = this.tokens[0].text;
@@ -100,11 +128,11 @@ Lexer.prototype.lex = function (text) {
     while (this.index < this.text.length) {
         this.ch = this.text.charAt(this.index);
 
-        if (this.isNumber(this.ch) || (this.ch === '.' && this.isNumber(this.peek()))) {
+        if (this.isNumber(this.ch) || ((this.is('.') && this.isNumber(this.peek())))) {
             this.readNumber();
-        } else if (this.ch === '\'' || this.ch === '"') {
+        } else if (this.is('\'"')) {
             this.readString(this.ch);
-        } else if (this.ch === '[' || this.ch === ']' || this.ch === ',') {
+        } else if (this.is('[],{}:')) {
             this.tokens.push({
                 text: this.ch
             });
@@ -118,6 +146,10 @@ Lexer.prototype.lex = function (text) {
         }
     }
     return this.tokens;
+};
+
+Lexer.prototype.is = function (chs) {
+    return chs.indexOf(this.ch) >= 0;
 };
 
 Lexer.prototype.isNumber = function (ch) {
@@ -203,6 +235,7 @@ Lexer.prototype.readString = function (quote) {
             this.tokens.push({
                 fn: _.constant(string),
                 constant: true,
+                string: string,
                 text: rawString
             });
             return;

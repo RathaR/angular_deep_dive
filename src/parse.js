@@ -24,7 +24,7 @@ Parser.prototype.parse = function (text) {
 Parser.prototype.primary = function () {
     var primary;
     if (this.expect('[')) {
-        primary = this.arrayDeclaration;
+        primary = this.arrayDeclaration();
     } else {
         var token = this.expect();
         primary = token.fn;

@@ -267,4 +267,14 @@ describe('parse', function () {
         var fn = parse('aKey["anotherKey"]["aThirdKey"]');
         expect(fn({aKey: {anotherKey: {aThirdKey: 42}}})).toBe(42);
     });
+
+    it('parses a field access after a property access', function () {
+        var fn = parse('aKey["anotherKey"].aThirdKey');
+        expect(fn({aKey: {anotherKey: {aThirdKey: 42}}})).toBe(42);
+    });
+
+    it('parses a chain of property and field access', function () {
+        var fn = parse('aKey["anotherKey"].aThirdKey["aFourthKey"]');
+        expect(fn({aKey: {anotherKey: {aThirdKey: {aFourthKey: 42}}}})).toBe(42);
+    });
 });

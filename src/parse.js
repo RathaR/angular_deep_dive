@@ -13,11 +13,29 @@ _.forEach(CONSTANTS, function (fn, constantName) {
 });
 
 var getterFn = function (ident) {
+    var pathKeys = ident.split('.');
+    if (pathKeys.length === 1) {
+        return simpleGetterFn1(pathKeys[0]);
+    } else {
+        return simpleGetterFn2(pathKeys[0], pathKeys[1]);
+    }
+};
+
+var simpleGetterFn1 = function (key) {
     return function (scope) {
-        return scope ? scope[ident] : undefined;
+        return scope ? scope[key] : undefined;
     };
 };
 
+var simpleGetterFn2 = function (key1, key2) {
+    return function (scope) {
+        if (!scope) {
+            return undefined;
+        }
+        scope = scope[key1];
+        return scope ? scope[key2] : undefined;
+    }
+};
 function Parser(lexer) {
     this.lexer = lexer;
 }
@@ -259,7 +277,7 @@ Lexer.prototype.readIdent = function () {
     var text = '';
     while (this.index < this.text.length) {
         var ch = this.text.charAt(this.index);
-        if (this.isIdent(ch) || this.isNumber(ch)) {
+        if (ch === '.' || this.isIdent(ch) || this.isNumber(ch)) {
             text += ch;
         } else {
             break;

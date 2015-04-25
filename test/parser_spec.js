@@ -133,4 +133,20 @@ describe('parse', function () {
         var fn = parse('[]');
         expect(fn()).toEqual([]);
     });
+
+    it('will parse a non-empty array', function () {
+        var fn = parse('[1, "two", [3]]');
+        expect(fn()).toEqual([1, 'two', [3]]);
+    });
+
+    it('will parse an array with trailing commas', function () {
+        var fn = parse('[1, 2, 3, ]');
+        expect(fn()).toEqual([1, 2, 3]);
+    });
+
+    it('marks array literals as literal and constant', function () {
+        var fn = parse('[1, 2, 3]');
+        expect(fn.literal).toBe(true);
+        expect(fn.constant).toBe(true);
+    });
 });

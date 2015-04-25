@@ -187,4 +187,59 @@ describe('parse', function () {
         expect(fn({aKey: {}})).toBeUndefined();
         expect(fn()).toBeUndefined();
     });
+
+    it('uses locals instead of scope when there is a matching key', function () {
+        var fn = parse('aKey');
+        expect(fn({aKey: 42}, {aKey: 43})).toBe(43);
+    });
+
+    it('it does not uses locals instead of scope when there is no a matching key', function () {
+        var fn = parse('aKey');
+        expect(fn({aKey: 42}, {otherKey: 43})).toBe(42);
+    });
+
+    it('uses locals instead of scope when a 2-part key matches ', function () {
+        var fn = parse('aKey.anotherKey');
+        expect(fn(
+                {aKey: {anotherKey: 42}},
+                {aKey: {anotherKey: 43}})
+        ).toBe(43);
+    });
+
+    it('it does not uses locals instead of scope when there is no a matching key for a 2-part keys', function () {
+        var fn = parse('aKey.anotherKey');
+        expect(fn(
+            {aKey: {anotherKey: 42}},
+            {otherKey: {anotherKey: 43}}
+        )).toBe(42);
+    });
+
+    it('uses locals instead of scope when the first part matches', function () {
+        var fn = parse('aKey.anotherKey');
+        expect(fn({aKey: {anotherKey: 42}}, {aKey: {}})).toBeUndefined();
+    });
+
+    it('uses locals when there is a matching local 4-part key', function() {
+       var fn = parse('aKey.key2.key3.key4');
+        expect(fn(
+            {aKey: {key2: {key3: {key4: 42}}}},
+            {aKey: {key2: {key3: {key4: 43}}}}
+        )).toBe(43);
+    });
+
+    it('uses locals when there is the first part in the local key', function() {
+        var fn = parse('aKey.key2.key3.key4');
+        expect(fn(
+            {aKey: {key2: {key3: {key4: 42}}}},
+            {aKey: {}}
+        )).toBeUndefined();
+    });
+
+    it('it does not use locals when there is no mathicng 4-part key', function() {
+        var fn = parse('aKey.key2.key3.key4');
+        expect(fn(
+            {aKey: {key2: {key3: {key4: 42}}}},
+            {otherKey: {anotherKey: 43}}
+        )).toBe(42);
+    });
 });

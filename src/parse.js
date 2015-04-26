@@ -61,6 +61,24 @@ var simpleGetterFn2 = function (key1, key2) {
         return scope ? scope[key2] : undefined;
     }
 };
+
+function constantWatchDelegate(scope, listenerFn, valueEq, watchFn) {
+
+    var unwatch = scope.$watch(
+        function () {
+            return watchFn(scope);
+        },
+        function (newValue, oldValue, scope) {
+            if (_.isFunction(listenerFn)) {
+                listenerFn.apply(this, arguments);
+            }
+            unwatch();
+        },
+        valueEq
+    );
+    return unwatch;
+}
+
 function Parser(lexer) {
     this.lexer = lexer;
 }
@@ -366,7 +384,11 @@ function parse(expr) {
         case 'string' :
             var lexer = new Lexer();
             var parser = new Parser(lexer);
-            return parser.parse(expr);
+            var parseFn = parser.parse(expr);
+            if (parseFn.constant) {
+                parseFn.$$watchDelegate = constantWatchDelegate;
+            }
+            return parseFn;
         case 'function':
             return expr;
         default :

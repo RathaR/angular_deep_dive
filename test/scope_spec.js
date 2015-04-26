@@ -1,7 +1,7 @@
 /* jshint globalstrict: true */
 /* global Scope: true */
 'use strict';
-xdescribe('Scope', function () {
+describe('Scope', function () {
     it('can be constructed and used as an object', function () {
         var scope = new Scope();
         scope.aProperty = 1;
@@ -249,7 +249,6 @@ xdescribe('Scope', function () {
             });
         });
 
-
         it('executes $evalAsynced function later in the same cycle', function () {
             scope.aValue = [1, 2, 3];
             scope.asyncEvaluated = false;
@@ -345,7 +344,7 @@ xdescribe('Scope', function () {
             expect(scope.phaseInWatchFunction).toBe('$digest');
         });
 
-        it('shedules a digest in $evalAsync', function (done) {
+        it('schedules a digest in $evalAsync', function (done) {
             scope.aValue = 'abc';
             scope.counter = 0;
             scope.$watch(function (scope) {
@@ -430,6 +429,7 @@ xdescribe('Scope', function () {
                 done();
             }, 50);
         });
+
         it('cancels and flushes $aplyAsync if digest first', function (done) {
             scope.counter = 0;
 
@@ -469,7 +469,6 @@ xdescribe('Scope', function () {
             expect(scope.counter).toBe(1);
         });
 
-
         it('does not include $$postDigest in the digest', function () {
             scope.aValue = 'original';
             scope.$$postDigest(function () {
@@ -489,6 +488,7 @@ xdescribe('Scope', function () {
             scope.$digest();
             expect(scope.watchedValue).toBe('changed');
         });
+
         it('catches exceptions in watch functions and continues', function () {
             scope.aValue = 'abc';
             scope.counter = 0;
@@ -676,6 +676,39 @@ xdescribe('Scope', function () {
             );
             scope.$digest();
             expect(scope.counter).toBe(0);
+        });
+
+        it('accepts expressions for watch functions', function () {
+            var theValue;
+
+            scope.aValue = 42;
+            scope.$watch('aValue', function (newValue, oldValue, scope) {
+                theValue = newValue;
+            });
+            scope.$digest();
+
+            expect(theValue).toBe(42);
+        });
+
+        it('accepts expressions in $eval', function () {
+            expect(scope.$eval('42')).toBe(42);
+        });
+
+        it('accepts expressions in $apply', function () {
+            scope.aFunction = _.constant(42);
+            expect(scope.$apply('aFunction()')).toBe(42);
+        });
+
+        it('accepts expressions in $evalAsync', function (done) {
+            var called;
+            scope.aFunction = function () {
+                called = true;
+            };
+            scope.$evalAsync('aFunction()');
+            scope.$$postDigest(function () {
+                expect(called).toBe(true);
+                done();
+            });
         });
     });
 
@@ -1630,6 +1663,16 @@ xdescribe('Scope', function () {
             expect(oldValueGiven).toEqual({a: 1, b: 2});
         });
 
+        it('accepts expressions for watch functions', function () {
+            var theValue;
+            scope.aColl = [1, 2, 3];
+            scope.$watchCollection('aColl', function (newValue, oldValue, scope) {
+                theValue = newValue;
+            });
+            scope.$digest();
+
+            expect(theValue).toEqual([1, 2, 3]);
+        });
     });
 
     describe('Events', function () {
@@ -1684,6 +1727,7 @@ xdescribe('Scope', function () {
         });
 
         _.forEach(['$emit', '$broadcast'], function (method) {
+
             it('calls the listeners of the matching event on ' + method, function () {
                 var listener1 = jasmine.createSpy();
                 var listener2 = jasmine.createSpy();

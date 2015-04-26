@@ -9,18 +9,24 @@ var CONSTANTS = {
 };
 
 _.forEach(CONSTANTS, function (fn, constantName) {
-    fn.constant = fn.literal = true;
+    fn.constant = fn.literal = fn.sharedGetter = true;
 });
+
+
+///TODO add and extend Parser.Zero, p 305
 
 var getterFn = _.memoize(function (ident) {
     var pathKeys = ident.split('.');
+    var fn;
     if (pathKeys.length === 1) {
-        return simpleGetterFn1(pathKeys[0]);
+        fn = simpleGetterFn1(pathKeys[0]);
     } else if (pathKeys.length === 2) {
-        return simpleGetterFn2(pathKeys[0], pathKeys[1]);
+        fn = simpleGetterFn2(pathKeys[0], pathKeys[1]);
     } else {
-        return generatedGetterFn(pathKeys);
+        fn = generatedGetterFn(pathKeys);
     }
+    fn.sharedGetter = true;
+    return fn;
 });
 
 var generatedGetterFn = function (keys) {
@@ -77,6 +83,72 @@ function constantWatchDelegate(scope, listenerFn, valueEq, watchFn) {
         valueEq
     );
     return unwatch;
+}
+
+function oneTimeWatchDelegate(scope, listenerFn, valueEq, watchFn) {
+
+    var lastValue;
+    var unwatch = scope.$watch(
+        function () {
+            return watchFn(scope);
+        },
+        function (newValue, oldValue, scope) {
+            lastValue = newValue;
+            if (_.isFunction(listenerFn)) {
+                listenerFn.apply(this, arguments);
+            }
+            if (!_.isUndefined(newValue)) {
+                scope.$$postDigest(function () {
+                    if (!_.isUndefined(lastValue)) {
+                        unwatch();
+                    }
+                });
+            }
+        },
+        valueEq
+    );
+    return unwatch;
+}
+
+function oneTimeLiteralWatchDelegate(scope, listenerFn, valueEq, watchFn) {
+
+    function isAllDefined(val) {
+        return !_.any(val, _.isUndefined);
+    }
+
+    var unwatch = scope.$watch(
+        function () {
+            return watchFn(scope);
+        },
+        function (newValue, oldValue, scope) {
+            if (_.isFunction(listenerFn)) {
+                listenerFn.apply(this, arguments);
+            }
+            if (isAllDefined(newValue)) {
+                scope.$$postDigest(function () {
+                    if (isAllDefined(newValue)) {
+                        unwatch();
+                    }
+                });
+            }
+        },
+        valueEq
+    );
+    return unwatch;
+}
+
+
+function wrapSharedExpression(exprFn) {
+    var wrapped = exprFn;
+    if (wrapped.sharedGetter) {
+        wrapped = function (self, locals) {
+            return exprFn(self, locals);
+        };
+        wrapped.constant = exprFn.constant;
+        wrapped.literal = exprFn.literal;
+        wrapped.assign = exprFn.assign;
+    }
+    return wrapped;
 }
 
 function Parser(lexer) {
@@ -152,22 +224,23 @@ Parser.prototype.expect = function (e) {
 };
 
 Parser.prototype.arrayDeclaration = function () {
-    var elementsFn = [];
+    var elementsFns = [];
     if (!this.peek(']')) {
         do {
             if (this.peek(']')) {
                 break;
             }
-            elementsFn.push(this.primary());
+            elementsFns.push(this.primary());
         } while (this.expect(','));
     }
     this.consume(']');
     var arrayFn = function () {
-        return _.map(elementsFn, function (elementFn) {
+        return _.map(elementsFns, function (elementFn) {
             return elementFn();
         });
     };
-    arrayFn.literal = arrayFn.constant = true;
+    arrayFn.literal = true;
+    arrayFn.constant  =_.every(elementsFns, 'constant');
     return arrayFn;
 };
 
@@ -384,10 +457,21 @@ function parse(expr) {
         case 'string' :
             var lexer = new Lexer();
             var parser = new Parser(lexer);
+
+            var oneTime = false;
+            if (expr.charAt(0) === ':' && expr.charAt(1) === ':') {
+                oneTime = true;
+                expr = expr.substring(2);
+            }
             var parseFn = parser.parse(expr);
+
             if (parseFn.constant) {
                 parseFn.$$watchDelegate = constantWatchDelegate;
+            } else if (oneTime) {
+                parseFn = wrapSharedExpression(parseFn);
+                parseFn.$$watchDelegate = parseFn.literal ? oneTimeLiteralWatchDelegate : oneTimeWatchDelegate;
             }
+
             return parseFn;
         case 'function':
             return expr;

@@ -55,7 +55,7 @@ describe('setupModuleLoader', function () {
 
         it('allow getting a module', function () {
             var myModule = window.angular.module('myModule', []);
-            var gotModule = windows.angular.module('myModule');
+            var gotModule = window.angular.module('myModule');
 
             expect(gotModule).toBeDefined();
             expect(gotModule).toBe(myModule);

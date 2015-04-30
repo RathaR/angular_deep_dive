@@ -20,6 +20,14 @@ function createInjector(modulesToLoad, strictDi) {
         }
     };
 
+    function instantiate(Type, locals) {
+        var UnwrappedType = _.isArray(Type) ? _.last(Type) : Type;
+
+        var instance = Object.create(UnwrappedType.prototype);
+        invoke(Type, instance, locals);
+        return instance;
+    }
+
     function annotate(fn) {
         if (_.isArray(fn)) {
             return fn.slice(0, fn.length - 1);
@@ -76,6 +84,7 @@ function createInjector(modulesToLoad, strictDi) {
             return cache[key];
         },
         invoke: invoke,
-        annotate: annotate
+        annotate: annotate,
+        instantiate: instantiate
     };
 }

@@ -12,9 +12,9 @@ function setupModuleLoader(window) {
         }
 
         var invokeQueue = [];
-        var invokeLater = function (method) {
+        var invokeLater = function (method, arrayMethod) {
             return function () {
-                invokeQueue.push([method, arguments]);
+                invokeQueue[arrayMethod || 'push']([method, arguments]);
                 return moduleInstance;
             }
         };
@@ -22,7 +22,7 @@ function setupModuleLoader(window) {
             name: name,
             requires: requires,
             _invokeQueue: invokeQueue,
-            constant: invokeLater('constant'),
+            constant: invokeLater('constant', 'unshift'),
             provider: invokeLater('provider')
         };
         modules[name] = moduleInstance;

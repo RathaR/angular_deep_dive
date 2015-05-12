@@ -6,15 +6,18 @@ function setupModuleLoader(window) {
     var ensure = function (obj, name, factory) {
         return obj[name] || (obj[name] = factory());
     };
-    var createModule = function (name, requires, modules) {
+    var createModule = function (name, requires, modules, configFn) {
         if (name === 'hasOwnProperty') {
             throw 'hasOwnProperty is not a valid module name';
         }
 
         var invokeQueue = [];
-        var invokeLater = function (method, arrayMethod) {
+        var configBlocks = [];
+
+        var invokeLater = function (service, method, arrayMethod, queue) {
             return function () {
-                invokeQueue[arrayMethod || 'push']([method, arguments]);
+                queue = queue || invokeQueue;
+                queue[arrayMethod || 'push']([service, method, arguments]);
                 return moduleInstance;
             }
         };
@@ -22,10 +25,16 @@ function setupModuleLoader(window) {
             name: name,
             requires: requires,
             _invokeQueue: invokeQueue,
-            constant: invokeLater('constant', 'unshift'),
-            provider: invokeLater('provider')
+            _configBlocks: configBlocks,
+            constant: invokeLater('$provide', 'constant', 'unshift'),
+            provider: invokeLater('$provide', 'provider'),
+            config: invokeLater('$injector', 'invoke', 'push', configBlocks)
         };
         modules[name] = moduleInstance;
+
+        if (configFn) {
+            moduleInstance.config(configFn);
+        }
         return moduleInstance;
     };
     var getModule = function (name, modules) {
@@ -39,9 +48,9 @@ function setupModuleLoader(window) {
     var angular = ensure(window, 'angular', Object);
     ensure(angular, 'module', function () {
         var modules = {};
-        return function (name, requires) {
+        return function (name, requires, configFn) {
             if (requires) {
-                return createModule(name, requires, modules);
+                return createModule(name, requires, modules, configFn);
             } else {
                 return getModule(name, modules);
             }

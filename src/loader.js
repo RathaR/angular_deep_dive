@@ -28,7 +28,12 @@ function setupModuleLoader(window) {
             _configBlocks: configBlocks,
             constant: invokeLater('$provide', 'constant', 'unshift'),
             provider: invokeLater('$provide', 'provider'),
-            config: invokeLater('$injector', 'invoke', 'push', configBlocks)
+            config: invokeLater('$injector', 'invoke', 'push', configBlocks),
+            run: function (fn) {
+                moduleInstance._runBlocks.push(fn);
+                return moduleInstance;
+            },
+            _runBlocks: []
         };
         modules[name] = moduleInstance;
 

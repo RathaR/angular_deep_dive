@@ -812,4 +812,32 @@ describe('injector', function () {
 
         expect(injector.get('b')).toBeNull();
     });
+
+    it('allows registering a value', function () {
+        var module = angular.module('myModule', []);
+
+        module.value('a', 42);
+
+        var injector = createInjector(['myModule']);
+        expect(injector.get('a')).toBe(42);
+    });
+
+    it('does not make a values available to config block', function () {
+        var module = angular.module('myModule', []);
+        module.value('a', 42);
+        module.config(function (a) {
+
+        });
+        expect(function () {
+            createInjector(['myModule']);
+        }).toThrow();
+    });
+
+    it('allows an undefined value', function () {
+        var module = angular.module('myModule', []);
+
+        module.value('a', undefined);
+        var injector = createInjector(['myModule']);
+        expect(injector.get('a')).toBeUndefined();
+    });
 });

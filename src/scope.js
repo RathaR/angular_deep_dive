@@ -4,6 +4,16 @@
 'use strict';
 
 function $RootScopeProvider() {
+
+    var TTL = 10;
+
+    this.digestTtl = function (value) {
+        if (_.isNumber(value)) {
+            TTL = value;
+        }
+        return value;
+    };
+
     this.$get = ['$parse', function ($parse) {
         function initWatchVal() {
         }
@@ -77,7 +87,7 @@ function $RootScopeProvider() {
         };
 
         Scope.prototype.$digest = function () {
-            var ttl = 10;
+            var ttl = TTL;
             var dirty;
             this.$root.$$lastDirtyWatch = null;
             this.$$beginPhase('$digest');
@@ -97,7 +107,7 @@ function $RootScopeProvider() {
                 }
                 dirty = this.$$digestOnce();
                 if ((dirty || this.$$asyncQueue.length) && !(ttl--)) {
-                    throw '10 digest iterations reached';
+                    throw TTL + ' digest iterations reached';
                 }
             } while (dirty || this.$$asyncQueue.length);
             this.$cleanPhase();

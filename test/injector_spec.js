@@ -868,8 +868,8 @@ describe('injector', function () {
         expect(injector.get('aService').getValue()).toBe(42);
     });
 
-    it('only instantiates services once', function() {
-       var module = angular.module('myModule', []);
+    it('only instantiates services once', function () {
+        var module = angular.module('myModule', []);
 
         module.service('aService', function MyService() {
 
@@ -877,5 +877,61 @@ describe('injector', function () {
 
         var injector = createInjector(['myModule']);
         expect(injector.get('aService')).toBe(injector.get('aService'));
+    });
+
+    it('allows changing an instance using a decorator', function () {
+        var module = angular.module('myModule', []);
+        module.factory('aValue', function () {
+            return {
+                aKey: 42
+            };
+        });
+
+        module.config(function ($provide) {
+            $provide.decorator('aValue', function ($delegate) {
+                $delegate.decoratedKey = 43;
+            });
+        });
+
+        var injector = createInjector(['myModule']);
+        expect(injector.get('aValue').aKey).toBe(42);
+        expect(injector.get('aValue').decoratedKey).toBe(43);
+    });
+
+    it('allows multiple decorators per service', function () {
+        var module = angular.module('myModule', []);
+        module.factory('aValue', function () {
+            return {};
+        });
+
+        module.config(function ($provide) {
+            $provide.decorator('aValue', function ($delegate) {
+                $delegate.decoratedKey = 42;
+            });
+            $provide.decorator('aValue', function ($delegate) {
+                $delegate.otherDecoratedKey = 43;
+            });
+        });
+        var injector = createInjector(['myModule']);
+
+        expect(injector.get('aValue').decoratedKey).toBe(42);
+        expect(injector.get('aValue').otherDecoratedKey).toBe(43);
+    });
+
+    it('uses dependency injectoin with decorators', function () {
+        var module = angular.module('myModule', []);
+        module.factory('aValue', function () {
+            return {};
+        });
+
+        module.constant('a', 42);
+        module.config(function ($provide) {
+            $provide.decorator('aValue', function ($delegate, a) {
+                $delegate.decoratedKey = a;
+            });
+        });
+        var injector = createInjector(['myModule']);
+
+        expect(injector.get('aValue').decoratedKey).toBe(42);
     });
 });

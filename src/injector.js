@@ -54,13 +54,22 @@ function createInjector(modulesToLoad, strictDi) {
                 $get: enforce === false ? factoryFn : enforceReturnValue(factoryFn)
             });
         },
-        service: function(key, Constructor) {
-          this.factory(key, function() {
+        service: function (key, Constructor) {
+            this.factory(key, function () {
                 return instanceInjector.instantiate(Constructor)
-          })
+            })
         },
         value: function (key, value) {
             this.factory(key, _.constant(value), false);
+        },
+        decorator: function (serviceName, decoratorFn) {
+            var provider = providerInjector.get(serviceName + 'Provider');
+            var originalGet = provider.$get;
+            provider.$get = function () {
+                var instance = instanceInjector.invoke(originalGet, provider);
+                instanceInjector.invoke(decoratorFn, null, {$delegate: instance});
+                return instance;
+            }
         }
     };
 

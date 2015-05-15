@@ -1,7 +1,13 @@
 /* jshint globalsstrict: true */
-/* global parse: false */
+/* global publishExternalAPI: false, parse: false */
 'use strict';
 describe('parse', function () {
+
+    var parse;
+    beforeEach(function () {
+        publishExternalAPI();
+        parse = createInjector(['ng']).get('$parse');
+    });
 
     it('can parse an integer', function () {
         var fn = parse('42');
@@ -329,12 +335,13 @@ describe('parse', function () {
 
     ///TODO Back to Ensuring Safety In Memb er Access
 
-    it('returns the function itself when given one', function() {
-       var fn = function() {};
+    it('returns the function itself when given one', function () {
+        var fn = function () {
+        };
         expect(parse(fn)).toBe(fn);
     });
 
-    it('still returns a function when given no argument', function() {
-       expect(parse()).toEqual(jasmine.any(Function));
+    it('still returns a function when given no argument', function () {
+        expect(parse()).toEqual(jasmine.any(Function));
     });
 });

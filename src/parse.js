@@ -452,31 +452,35 @@ Lexer.prototype.readIdent = function () {
     this.tokens.push(token);
 };
 
-function parse(expr) {
-    switch (typeof expr) {
-        case 'string' :
-            var lexer = new Lexer();
-            var parser = new Parser(lexer);
+function $ParseProvider() {
+    this.$get = function() {
+        return function(expr) {
+            switch (typeof expr) {
+                case 'string' :
+                    var lexer = new Lexer();
+                    var parser = new Parser(lexer);
 
-            var oneTime = false;
-            if (expr.charAt(0) === ':' && expr.charAt(1) === ':') {
-                oneTime = true;
-                expr = expr.substring(2);
+                    var oneTime = false;
+                    if (expr.charAt(0) === ':' && expr.charAt(1) === ':') {
+                        oneTime = true;
+                        expr = expr.substring(2);
+                    }
+                    var parseFn = parser.parse(expr);
+
+                    if (parseFn.constant) {
+                        parseFn.$$watchDelegate = constantWatchDelegate;
+                    } else if (oneTime) {
+                        parseFn = wrapSharedExpression(parseFn);
+                        parseFn.$$watchDelegate = parseFn.literal ? oneTimeLiteralWatchDelegate : oneTimeWatchDelegate;
+                    }
+
+                    return parseFn;
+                case 'function':
+                    return expr;
+                default :
+                    return _.noop;
             }
-            var parseFn = parser.parse(expr);
-
-            if (parseFn.constant) {
-                parseFn.$$watchDelegate = constantWatchDelegate;
-            } else if (oneTime) {
-                parseFn = wrapSharedExpression(parseFn);
-                parseFn.$$watchDelegate = parseFn.literal ? oneTimeLiteralWatchDelegate : oneTimeWatchDelegate;
-            }
-
-            return parseFn;
-        case 'function':
-            return expr;
-        default :
-            return _.noop;
+        }
     }
 }
 

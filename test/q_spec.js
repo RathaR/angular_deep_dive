@@ -14,4 +14,9 @@ describe('$q', function () {
        var d = $q.defer();
         expect(d).toBeDefined();
     });
+
+    it('has a promise for each deferred', function() {
+       var d = $q.defer();
+        expect(d.promise).toBeDefined();
+    });
 });

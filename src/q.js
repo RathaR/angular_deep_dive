@@ -10,6 +10,9 @@ function $QProvider() {
 
         Promise.prototype.then = function (onFulfilled) {
             this.$$state.pending = onFulfilled;
+            if (this.$$state.status > 0) {
+                scheduleProcessQueue(this.$$state);
+            }
         };
 
         function Deferred() {
@@ -27,7 +30,7 @@ function $QProvider() {
         }
 
         Deferred.prototype.resolve = function (v) {
-            if(this.promise.$$state.status) {
+            if (this.promise.$$state.status) {
                 return;
             }
             this.promise.$$state.status = 1;
